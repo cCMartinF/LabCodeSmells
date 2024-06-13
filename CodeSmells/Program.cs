@@ -1,13 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
+using CodeSmells.Entities;
 
 namespace MooGame
 {
-	class MainClass
+    class MainClass
 	{
-
-		public static void Main(string[] args)
+        public static void Main(string[] args)
 		{
 
 			bool continuePlaying = true;
@@ -16,31 +16,30 @@ namespace MooGame
 
 			while (continuePlaying)
 			{
-				string targetValue = CreateTargetValue();
+                int amountOfGuesses = 1;
+                string targetValue = CreateTargetValue();
 
-				
-				Console.WriteLine("New game:\n");
-				//comment out or remove next line to play real games!
-				Console.WriteLine("For practice, number is: " + targetValue + "\n");
+				Console.WriteLine($"New game:\n For practice, number is: {targetValue}\n");
+
 				string guessedTargetValue = Console.ReadLine() ?? "";
 				
-				int amountOfGuesses = 1;
 				string comparedValue = CompareTargetAndGuess(targetValue, guessedTargetValue);
+
 				Console.WriteLine(comparedValue + "\n");
 				while (comparedValue != "BBBB,")
 				{
 					amountOfGuesses++;
-					guessedTargetValue = Console.ReadLine();
-					Console.WriteLine(guessedTargetValue + "\n");
+					guessedTargetValue = Console.ReadLine() ?? "  ";
+					Console.WriteLine($"{guessedTargetValue}\n");
 					comparedValue = CompareTargetAndGuess(targetValue, guessedTargetValue);
-					Console.WriteLine(comparedValue + "\n");
+					Console.WriteLine($"{comparedValue}\n");
 				}
 				StreamWriter logToDB = new StreamWriter("result.txt", append: true);
 				logToDB.WriteLine(playerName + "#&#" + amountOfGuesses);
 				logToDB.Close();
 				GetTopList();
 				Console.WriteLine("Correct, it took " + amountOfGuesses + " guesses\nContinue?");
-				string answer = Console.ReadLine();
+				string answer = Console.ReadLine() ?? "";
 				if (answer != null && answer != "" && answer.Substring(0, 1) == "n")
 				{
 					continuePlaying = false;
@@ -120,44 +119,6 @@ namespace MooGame
 				Console.WriteLine(string.Format("{0,-9}{1,5:D}{2,9:F2}", p.Name, p.NGames, p.Average()));
 			}
 			input.Close();
-		}
-	}
-
-	class PlayerData
-	{
-		public string Name { get; private set; }
-        public int NGames { get; private set; }
-		int totalGuess;
-		
-
-		public PlayerData(string name, int guesses)
-		{
-			this.Name = name;
-			NGames = 1;
-			totalGuess = guesses;
-		}
-
-		public void Update(int guesses)
-		{
-			totalGuess += guesses;
-			NGames++;
-		}
-
-		public double Average()
-		{
-			return (double)totalGuess / NGames;
-		}
-
-		
-	    public override bool Equals(Object p)
-		{
-			return Name.Equals(((PlayerData)p).Name);
-		}
-
-		
-	    public override int GetHashCode()
-        {
-			return Name.GetHashCode();
 		}
 	}
 }
