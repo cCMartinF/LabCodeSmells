@@ -10,44 +10,44 @@ namespace MooGame
 		public static void Main(string[] args)
 		{
 
-			bool playOn = true;
+			bool continuePlaying = true;
 			Console.WriteLine("Enter your user name:\n");
-			string name = Console.ReadLine();
+			string playerName = Console.ReadLine();
 
-			while (playOn)
+			while (continuePlaying)
 			{
-				string goal = makeGoal();
+				string targetValue = CreateTargetValue();
 
 				
 				Console.WriteLine("New game:\n");
 				//comment out or remove next line to play real games!
-				Console.WriteLine("For practice, number is: " + goal + "\n");
-				string guess = Console.ReadLine();
+				Console.WriteLine("For practice, number is: " + targetValue + "\n");
+				string guessedTargetValue = Console.ReadLine() ?? "";
 				
-				int nGuess = 1;
-				string bbcc = checkBC(goal, guess);
-				Console.WriteLine(bbcc + "\n");
-				while (bbcc != "BBBB,")
+				int amountOfGuesses = 1;
+				string comparedValue = CompareTargetAndGuess(targetValue, guessedTargetValue);
+				Console.WriteLine(comparedValue + "\n");
+				while (comparedValue != "BBBB,")
 				{
-					nGuess++;
-					guess = Console.ReadLine();
-					Console.WriteLine(guess + "\n");
-					bbcc = checkBC(goal, guess);
-					Console.WriteLine(bbcc + "\n");
+					amountOfGuesses++;
+					guessedTargetValue = Console.ReadLine();
+					Console.WriteLine(guessedTargetValue + "\n");
+					comparedValue = CompareTargetAndGuess(targetValue, guessedTargetValue);
+					Console.WriteLine(comparedValue + "\n");
 				}
-				StreamWriter output = new StreamWriter("result.txt", append: true);
-				output.WriteLine(name + "#&#" + nGuess);
-				output.Close();
-				showTopList();
-				Console.WriteLine("Correct, it took " + nGuess + " guesses\nContinue?");
+				StreamWriter logToDB = new StreamWriter("result.txt", append: true);
+				logToDB.WriteLine(playerName + "#&#" + amountOfGuesses);
+				logToDB.Close();
+				GetTopList();
+				Console.WriteLine("Correct, it took " + amountOfGuesses + " guesses\nContinue?");
 				string answer = Console.ReadLine();
 				if (answer != null && answer != "" && answer.Substring(0, 1) == "n")
 				{
-					playOn = false;
+					continuePlaying = false;
 				}
 			}
 		}
-		static string makeGoal()
+		static string CreateTargetValue()
 		{
 			Random randomGenerator = new Random();
 			string goal = "";
@@ -65,7 +65,7 @@ namespace MooGame
 			return goal;
 		}
 
-		static string checkBC(string goal, string guess)
+		static string CompareTargetAndGuess(string goal, string guess)
 		{
 			int cows = 0, bulls = 0;
 			guess += "    ";     // if player entered less than 4 chars
@@ -90,7 +90,7 @@ namespace MooGame
 		}
 
 
-		static void showTopList()
+		static void GetTopList()
 		{
 			StreamReader input = new StreamReader("result.txt");
 			List<PlayerData> results = new List<PlayerData>();
