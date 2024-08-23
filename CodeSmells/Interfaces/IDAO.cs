@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CodeSmells.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,8 +9,9 @@ namespace CodeSmells.Interfaces;
 
 public interface IDAO
 {
-    void Get();
-    void Create();
-    void Delete();
-    void Update();
+    void CreateNewGameFile(string gameName);
+    Player GetPlayerDataFromFile(string playerName, string gameName);
+    void UpdateGameFile(string gameName, Player player);
+
+    List<Player> GetAllPlayers();
 }

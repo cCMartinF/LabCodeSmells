@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 
 namespace CodeSmells.Interfaces;
 
-public interface IGames
+public interface IGame
 {
+    public abstract string GameName { get; }
+    public abstract IIO Io { get; }
+    public abstract IDAO Idao { get; }
     public void Run();
-    public void Save();
-    public void Quit();
 
 }
