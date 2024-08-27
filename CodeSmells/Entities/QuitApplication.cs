@@ -20,9 +20,10 @@ public class QuitApplication : IGame
         throw new NotImplementedException();
     }
 
-    public void Run()
+    public bool Run()
     {
         Environment.Exit(0);
+        return false;
     }
 
     public void Save()

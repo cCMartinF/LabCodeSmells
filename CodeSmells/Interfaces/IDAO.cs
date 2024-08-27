@@ -10,8 +10,7 @@ namespace CodeSmells.Interfaces;
 public interface IDAO
 {
     void CreateNewGameFile(string gameName);
-    Player GetPlayerDataFromFile(string playerName, string gameName);
-    void UpdateGameFile(string gameName, Player player);
-
+    Player GetPlayerData(string playerName, string gameName);
+    void UpdateGame(string gameName, Player player);
     List<Player> GetAllPlayers();
 }

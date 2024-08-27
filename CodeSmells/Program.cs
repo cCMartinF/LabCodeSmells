@@ -14,7 +14,7 @@ namespace MooGame
         public static void Main(string[] args)
 		{
             IIO io = new ConsoleIO();
-			IDAO dao = new TextFileDB();
+			IDAO dao = new TextFileDao();
             GameCreator gameCreator = new GameCreator();
             GameController gameController = new GameController(io, gameCreator, dao);
 			gameController.RunMainMenu();

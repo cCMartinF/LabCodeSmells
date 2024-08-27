@@ -15,13 +15,13 @@ public class GameController
     private readonly IDAO _dAO;
     private readonly GameCreator _gameCreator;
     private readonly List<IGame> _games = new List<IGame>();
+    private bool continuePlaying = true;
 
     public GameController(IIO iO, GameCreator gameCreator, IDAO dAO)
     {
         _iO = iO;
         _gameCreator = gameCreator;
         _dAO = dAO;
-       
     }
 
     public void RunMainMenu()
@@ -34,7 +34,7 @@ public class GameController
             _iO.WriteOutput(menuMessage);
             string playerSelection = _iO.ReadInput().ToLower();
             IGame _game = _gameCreator.CreateGame(playerSelection, _iO, _dAO);
-            TryRunGame(_game);
+            PlayGame(_game);
         }
     }
 
@@ -64,15 +64,21 @@ public class GameController
         return types;
     }
 
-    private void TryRunGame(IGame _game)
+    private void PlayGame(IGame _game)
     {
-        try
+        
+        while (continuePlaying)
         {
-            _game.Run();
-        }
-        catch (ArgumentNullException)
-        {
-            _iO.WriteOutput("Error in starting game. Please try again.");
-        }
+           continuePlaying = false;
+            try
+            {
+                continuePlaying = _game.Run();
+            }
+            catch (ArgumentNullException)
+            {
+                _iO.WriteOutput("Error in starting game. Please try again.");
+            }
+        } 
+        
     }
 }

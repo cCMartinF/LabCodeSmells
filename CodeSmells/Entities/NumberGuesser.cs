@@ -14,6 +14,7 @@ public class NumberGuesser : IGame
     public string GameName => "NumberGuesser";
     bool continuePlaying = true;
     int targetValueMaxLength = 2;
+    GameLogic? gameLogic;
 
     #region constructor
     public IIO Io { get; }
@@ -25,45 +26,83 @@ public class NumberGuesser : IGame
     }
     #endregion
 
-    public void Run()
+    public bool Run()
     {
-        GameLogic gameLogic = new GameLogic();
-        List<Player> playerList = new List<Player>();
-        int targetValue = Convert.ToInt32(gameLogic.CreateTargetValue(targetValueMaxLength));
-        int amountOfGuesses = 0;
-        int verifiedGuess;
+       
+        int targetValue, amountOfGuesses;
+        GameInitialization(out gameLogic, out targetValue, out amountOfGuesses);
+        Player player = SetUpPlayerData();
 
-        Io.WriteOutput("Please enter your name.");
-        string playerName = Io.ReadInput() ?? "";
-        Player player = Idao.GetPlayerDataFromFile(playerName, GameName);
         Io.WriteOutput("Enter your guess: ");
+        string guessedTargetValue = Io.ReadInput() ?? "";
 
-        while (continuePlaying)
+        while (IsGameCompleted(targetValue, guessedTargetValue))
         {
-            string unverifiedGuess = Io.ReadInput();
-
-            if (int.TryParse(unverifiedGuess, out verifiedGuess))
-            {
-                amountOfGuesses++;
-
-                string message = verifiedGuess switch
-                {
-                    < 0 or > 100 => "Your guess is out of range!",
-                    _ => verifiedGuess < targetValue ? "Too low! Try again."
-                     : verifiedGuess > targetValue ? "Too high! Try again."
-                     : gameLogic.GetGameCompleteMessageWithGuesses(amountOfGuesses)
-                };
-
-                Io.WriteOutput(message);
-
-                if (verifiedGuess == targetValue)
-                    break;
-
-            }
+            amountOfGuesses++;
+            guessedTargetValue = Io.ReadInput() ?? "";
         }
+        GameCompleted(amountOfGuesses, player);
+        ContinuePlaying();
+
+        return continuePlaying;
+    }
+
+    private void WriteResultOfComparedValues(int targetValue, int guessedValueAsNumber)
+    {
+            string message = guessedValueAsNumber switch
+            {
+                < 0 or > 100 => "Your guess is out of range!",
+                _ => guessedValueAsNumber < targetValue ? "Too low! Try again."
+                : guessedValueAsNumber > targetValue ? "Too high! Try again."
+                : ""
+            };
+            Io.WriteOutput(message);
+    }
+    private void ContinuePlaying()
+    {
+        Io.WriteOutput("Do you want to play again? Y/y");
+        string userSelection = Io.ReadInput().ToLower();
+        if (userSelection == "y")
+            continuePlaying = true;
+    }
+
+    private bool IsGameCompleted(int targetValue, string guessedValue)
+    {
+        int guessedValueAsNumber;
+        if (int.TryParse(guessedValue, out guessedValueAsNumber))
+        {
+            WriteResultOfComparedValues(targetValue, guessedValueAsNumber);
+            if (guessedValueAsNumber == targetValue)
+                return false;
+        }
+        else
+        {
+            Io.WriteOutput("Invalid input.");
+        }
+        return true;
+    }
+
+    private void GameCompleted(int amountOfGuesses, Player player)
+    {
         player.UpdateTotalAmountOfGuesses(amountOfGuesses);
-        Idao.UpdateGameFile(GameName, player);
+        Io.WriteOutput(gameLogic.GetGameCompleteMessageWithGuesses(amountOfGuesses));
+        Idao.UpdateGame(GameName, player);
         string highScore = gameLogic.GetHighScoresOfPlayersAverageGuesses(Idao.GetAllPlayers());
         Io.WriteOutput(highScore);
+    }
+    private Player SetUpPlayerData()
+    {
+        Io.WriteOutput("Please enter your name.");
+        string playerName = Io.ReadInput() ?? "";
+        Player player = Idao.GetPlayerData(playerName, GameName);
+        return player;
+    }
+
+    private void GameInitialization(out GameLogic gameLogic, out int targetValue, out int amountOfGuesses)
+    {
+        gameLogic = new GameLogic();
+        List<Player> playerList = new List<Player>();
+        targetValue = Convert.ToInt32(gameLogic.CreateTargetValue(targetValueMaxLength));
+        amountOfGuesses = 1;
     }
 }

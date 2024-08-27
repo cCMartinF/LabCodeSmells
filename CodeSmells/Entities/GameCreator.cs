@@ -12,8 +12,9 @@ namespace CodeSmells.Entities;
 
 public class GameCreator
 {
+   
     private readonly Dictionary<string, Func<IIO, IDAO, IGame>> _gameCreator;
-    IGameAbstractFactory _gameAbstractFactory;
+    IGameAbstractFactory? _gameAbstractFactory;
     bool noGameSelected = true;
     public GameCreator()
     {
@@ -33,7 +34,7 @@ public class GameCreator
             {
                 break;
             }
-            io.WriteOutput("Invalid input, no games exist of the given index.");
+            io.WriteOutput("Invalid input, no games exist with that name.");
             userInput = io.ReadInput().ToLower();
         }
         return _gameCreator[userInput](io, dAO);
@@ -52,9 +53,6 @@ public class GameCreator
         IGame game = _gameAbstractFactory.CreateGame(iO, dAO);
         return game;
     }
-
-    //TODO Skapa en IGame som "löser" quitMetoden när den returneras till GameController
-
     public IGame QuitApplication()
     {
         IGame quitApplication = new QuitApplication();

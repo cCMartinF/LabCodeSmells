@@ -11,6 +11,6 @@ public interface IGame
     public abstract string GameName { get; }
     public abstract IIO Io { get; }
     public abstract IDAO Idao { get; }
-    public void Run();
+    public bool Run();
 
 }

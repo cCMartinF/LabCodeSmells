@@ -12,8 +12,11 @@ public class MasterMind : IGame
 {
 
     public string GameName => "MasterMind";
-    bool continuePlaying = true;
+    
     int targetValueMaxLength = 4;
+    GameLogic gameLogic;
+    bool continuePlaying = false;
+
 
     #region constructor
     public IIO Io { get; }
@@ -23,61 +26,80 @@ public class MasterMind : IGame
     {
         Io = iO;
         Idao = iDao;
+        gameLogic = new GameLogic();
     }
     #endregion
-    public void Run()
+    public bool Run()
     {
-        GameLogic gameLogic = new GameLogic();
-        List<Player> playerList = new List<Player>();
-        string targetValue = gameLogic.CreateTargetValue(targetValueMaxLength);
-        int amountOfGuesses = 1;
 
-        Io.WriteOutput("Please enter your name.");
-        string playerName = Io.ReadInput() ?? "Null";
-        Player player = Idao.GetPlayerDataFromFile(playerName, GameName);
+        string targetValue;
+        int amountOfGuesses;
+       
+
+        GameInitialization(out gameLogic, out targetValue, out amountOfGuesses);
+        Player player = SetUpPlayerData();
+
         Io.WriteOutput($"New game:\n For practice, number is: {targetValue}\n");
+        string guessedTargetValue = Io.ReadInput() ?? "";
 
-        while (continuePlaying)
+
+        while (IsGameCompleted(targetValue, guessedTargetValue))
         {
-            string guessedTargetValue = Io.ReadInput() ?? "";
-            string cowsAndBulls = GetCowsAndBulls(targetValue, guessedTargetValue);
-            Io.WriteOutput(cowsAndBulls + "\n");
-
-            if (guessedTargetValue == targetValue)
-            {
-                break;
-            }
+            WriteCowsAndBulls(gameLogic.GetRightAndWrong(targetValue, guessedTargetValue));
             amountOfGuesses++;
+            guessedTargetValue = Io.ReadInput() ?? "";
         }
+        GameCompleted(amountOfGuesses, player);
+        ContinuePlaying();
 
+        return continuePlaying;
+
+    }
+
+    private void ContinuePlaying()
+    {
+        Io.WriteOutput("Do you want to play again? Y/y");
+        string userSelection = Io.ReadInput().ToLower();
+        if (userSelection == "y")
+            continuePlaying = true;
+    }
+
+    private void GameCompleted(int amountOfGuesses, Player player)
+    {
         player.UpdateTotalAmountOfGuesses(amountOfGuesses);
         Io.WriteOutput(gameLogic.GetGameCompleteMessageWithGuesses(amountOfGuesses));
-        Idao.UpdateGameFile(GameName, player);
+        Idao.UpdateGame(GameName, player);
         string highScore = gameLogic.GetHighScoresOfPlayersAverageGuesses(Idao.GetAllPlayers());
         Io.WriteOutput(highScore);
     }
 
-    private string GetCowsAndBulls(string goal, string guess)
+    private Player SetUpPlayerData()
     {
-        int cows = 0, bulls = 0;
-        bool[] indexWithBull = new bool[goal.Length];
+        Io.WriteOutput("Please enter your name.");
+        string playerName = Io.ReadInput() ?? "";
+        Player player = Idao.GetPlayerData(playerName, GameName);
+        return player;
+    }
 
-        for (int i = 0; i < guess.Length; i++)
-            if (goal[i] == guess[i])
-            {
-                bulls++;
-                indexWithBull[i] = true;
-            }
+    private bool IsGameCompleted(string targetValue, string guessedTargetValue)
+    {
+        (int rightGuesses, int wrongGuesses) result = gameLogic.GetRightAndWrong(targetValue, guessedTargetValue);
 
-        for (int i = 0; i < guess.Length; i++)
-            if (!indexWithBull[i])
-            {
-                for (int j = 0; j < goal.Length; j++)
-                    if (goal[j] == guess[i])
-                        cows++;
-            }
+        if (result.rightGuesses == targetValueMaxLength)
+            return false;
+        return true;
+    }
 
-        string result = new string('B', bulls) + "," + new string('C', cows);
-        return result;
+    private void GameInitialization(out GameLogic gameLogic, out string targetValue, out int amountOfGuesses)
+    {
+        gameLogic = new GameLogic();
+        List<Player> playerList = new List<Player>();
+        targetValue = gameLogic.CreateTargetValue(targetValueMaxLength);
+        amountOfGuesses = 1;
+    }
+    private void WriteCowsAndBulls((int right, int wrong) rightAndWrong)
+    {
+        string result = new string('B', rightAndWrong.right) + ',' + new string('C', rightAndWrong.wrong);
+        Io.WriteOutput(result);
     }
 }
